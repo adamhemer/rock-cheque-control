@@ -33,3 +33,6 @@
 
 # Archive
 lib/
+
+# Build files
+build/
