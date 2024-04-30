@@ -123,30 +123,35 @@ uint8_t vibrateCount = 0;
 bool vibrating = false;
 int selectedPlayer = -1;
 
+// Buzzers Armed
+unsigned long armedVibrateMillis = 0;
 
-#line 126 "C:\\Users\\Adam\\Documents\\dev\\rock-cheque-v2-control\\rock-cheque-v2-control.ino"
+
+#line 129 "C:\\Users\\Adam\\Documents\\dev\\rock-cheque-v2-control\\rock-cheque-v2-control.ino"
 void setup();
-#line 205 "C:\\Users\\Adam\\Documents\\dev\\rock-cheque-v2-control\\rock-cheque-v2-control.ino"
+#line 208 "C:\\Users\\Adam\\Documents\\dev\\rock-cheque-v2-control\\rock-cheque-v2-control.ino"
 void loop();
-#line 395 "C:\\Users\\Adam\\Documents\\dev\\rock-cheque-v2-control\\rock-cheque-v2-control.ino"
+#line 409 "C:\\Users\\Adam\\Documents\\dev\\rock-cheque-v2-control\\rock-cheque-v2-control.ino"
 void showAll(CRGB col);
-#line 407 "C:\\Users\\Adam\\Documents\\dev\\rock-cheque-v2-control\\rock-cheque-v2-control.ino"
+#line 421 "C:\\Users\\Adam\\Documents\\dev\\rock-cheque-v2-control\\rock-cheque-v2-control.ino"
 void showAllArray(CRGB col[]);
-#line 419 "C:\\Users\\Adam\\Documents\\dev\\rock-cheque-v2-control\\rock-cheque-v2-control.ino"
+#line 433 "C:\\Users\\Adam\\Documents\\dev\\rock-cheque-v2-control\\rock-cheque-v2-control.ino"
 void showOn(int index, CRGB col);
-#line 429 "C:\\Users\\Adam\\Documents\\dev\\rock-cheque-v2-control\\rock-cheque-v2-control.ino"
+#line 443 "C:\\Users\\Adam\\Documents\\dev\\rock-cheque-v2-control\\rock-cheque-v2-control.ino"
 void EXPANDER_ISR();
-#line 435 "C:\\Users\\Adam\\Documents\\dev\\rock-cheque-v2-control\\rock-cheque-v2-control.ino"
+#line 449 "C:\\Users\\Adam\\Documents\\dev\\rock-cheque-v2-control\\rock-cheque-v2-control.ino"
 void vibrateRemote(int index, bool state);
-#line 441 "C:\\Users\\Adam\\Documents\\dev\\rock-cheque-v2-control\\rock-cheque-v2-control.ino"
+#line 454 "C:\\Users\\Adam\\Documents\\dev\\rock-cheque-v2-control\\rock-cheque-v2-control.ino"
+void vibrateAll(bool state);
+#line 462 "C:\\Users\\Adam\\Documents\\dev\\rock-cheque-v2-control\\rock-cheque-v2-control.ino"
 void indicateJack(int index, bool state);
-#line 447 "C:\\Users\\Adam\\Documents\\dev\\rock-cheque-v2-control\\rock-cheque-v2-control.ino"
+#line 468 "C:\\Users\\Adam\\Documents\\dev\\rock-cheque-v2-control\\rock-cheque-v2-control.ino"
 bool remoteSense(int index);
-#line 453 "C:\\Users\\Adam\\Documents\\dev\\rock-cheque-v2-control\\rock-cheque-v2-control.ino"
+#line 474 "C:\\Users\\Adam\\Documents\\dev\\rock-cheque-v2-control\\rock-cheque-v2-control.ino"
 bool remoteButton(int index);
-#line 459 "C:\\Users\\Adam\\Documents\\dev\\rock-cheque-v2-control\\rock-cheque-v2-control.ino"
+#line 480 "C:\\Users\\Adam\\Documents\\dev\\rock-cheque-v2-control\\rock-cheque-v2-control.ino"
 void displayLogo();
-#line 126 "C:\\Users\\Adam\\Documents\\dev\\rock-cheque-v2-control\\rock-cheque-v2-control.ino"
+#line 129 "C:\\Users\\Adam\\Documents\\dev\\rock-cheque-v2-control\\rock-cheque-v2-control.ino"
 void setup()
 {
 
@@ -258,7 +263,12 @@ void loop()
             // Arm buzzers
             case 'A':
             {
-                gameState = READY;
+                if (gameState == IDLE) {
+                    armedVibrateMillis = millis();
+                    vibrateAll(true);
+                    gameState = READY;
+                    Serial.println("> Buzzers ARMED! Moving to READY state");
+                }
                 break;
             }
             // Correct answer
@@ -358,6 +368,8 @@ void loop()
                                 Serial.print(i);
                                 Serial.println(" pressed!");
 
+                                vibrateAll(false); // Cancel armed vibration if buzzer pressed immediately
+
                                 gameState = BUZZED;
                                 flashMillis = millis();
                                 vibrateMillis = millis();
@@ -412,6 +424,10 @@ void loop()
                 vibrating = false;
             }
         }
+    } else if (gameState == READY) {
+        if (millis() - armedVibrateMillis > 100) {
+            vibrateAll(false);
+        }
     }
 }
 
@@ -459,6 +475,13 @@ void EXPANDER_ISR()
 void vibrateRemote(int index, bool state)
 {
     OUTPUTS.digitalWrite(remoteVibrateMap[index], state);
+}
+
+void vibrateAll(bool state)
+{
+    for (int i = 0; i < 8; i++) {
+        OUTPUTS.digitalWrite(remoteVibrateMap[i], state);
+    }
 }
 
 // Illuminate indicator on RJ45 jack

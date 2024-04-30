@@ -122,6 +122,9 @@ uint8_t vibrateCount = 0;
 bool vibrating = false;
 int selectedPlayer = -1;
 
+// Buzzers Armed
+unsigned long armedVibrateMillis = 0;
+
 
 void setup()
 {
@@ -200,6 +203,8 @@ void setup()
     {
         remoteConnected[i] = remoteSense(i);
     }
+
+    // Serial.println("")
 }
 
 void loop()
@@ -234,7 +239,12 @@ void loop()
             // Arm buzzers
             case 'A':
             {
-                gameState = READY;
+                if (gameState == IDLE) {
+                    armedVibrateMillis = millis();
+                    vibrateAll(true);
+                    gameState = READY;
+                    Serial.println("> Buzzers ARMED! Moving to READY state");
+                }
                 break;
             }
             // Correct answer
@@ -334,6 +344,8 @@ void loop()
                                 Serial.print(i);
                                 Serial.println(" pressed!");
 
+                                vibrateAll(false); // Cancel armed vibration if buzzer pressed immediately
+
                                 gameState = BUZZED;
                                 flashMillis = millis();
                                 vibrateMillis = millis();
@@ -388,6 +400,10 @@ void loop()
                 vibrating = false;
             }
         }
+    } else if (gameState == READY) {
+        if (millis() - armedVibrateMillis > 100) {
+            vibrateAll(false);
+        }
     }
 }
 
@@ -435,6 +451,13 @@ void EXPANDER_ISR()
 void vibrateRemote(int index, bool state)
 {
     OUTPUTS.digitalWrite(remoteVibrateMap[index], state);
+}
+
+void vibrateAll(bool state)
+{
+    for (int i = 0; i < 8; i++) {
+        OUTPUTS.digitalWrite(remoteVibrateMap[i], state);
+    }
 }
 
 // Illuminate indicator on RJ45 jack
