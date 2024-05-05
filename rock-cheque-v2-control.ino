@@ -226,6 +226,8 @@ void loop()
                 Serial.print(index);
                 Serial.print(" with colour 0x");
                 Serial.print(primary, HEX);
+                Serial.print(" in decimal ");
+                Serial.println(primary, DEC);
                 remoteColours[index] = primary;
                 showOn(index, remoteColours[index]);
                 break;
@@ -328,8 +330,8 @@ void loop()
                                 Serial.print("P");
                                 Serial.println(i);
                             } else {
-                                Serial.print("R");
-                                Serial.println(i);
+                                // Serial.print("R");   // Button released not used for anything
+                                // Serial.println(i);
                             }
                             break;
                         }
@@ -375,6 +377,10 @@ void loop()
                         }
                         case BUZZED:
                         {
+                            if (pin) {
+                                Serial.print("L");  // Too late
+                                Serial.println(i);
+                            }
                             break;
                         }
                     }
