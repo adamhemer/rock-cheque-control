@@ -30,6 +30,10 @@
 #define LED_RED 4
 #define LED_GREEN 5
 
+// On board buttons
+#define BUTTON_0    34
+#define BUTTON_1    35
+
 // I2C Addresses
 #define OLED_ADDR 0x3C
 #define INPUT_ADDR 0x20
@@ -136,6 +140,9 @@ void setup()
     pinMode(LED_RED, OUTPUT);
     pinMode(LED_GREEN, OUTPUT);
 
+    pinMode(BUTTON_0, INPUT_PULLUP);
+    pinMode(BUTTON_1, INPUT_PULLUP);
+
     pinMode(INT_PIN, INPUT);
 
     pinMode(LED_PIN, OUTPUT);
@@ -209,7 +216,6 @@ void setup()
 
 void loop()
 {
-
     // -------- Serial Handling --------
     if (Serial.available() > 0) {
         char inByte = Serial.read();
@@ -405,6 +411,26 @@ void loop()
             if (vibrateCount >= 6 && !vibrateState) {  // Stop vibration
                 vibrating = false;
             }
+        }
+        // FOR TESTING
+        if (!digitalRead(BUTTON_0) || !digitalRead(BUTTON_1)) {
+            showAll(digitalRead(BUTTON_0) ? CRGB::Lime : CRGB::Red);
+            gameState = ANSWER;
+            Serial.println("> Moving to ANSWER state");
+
+            delay(2000);
+
+            showAllArray(remoteColours);
+            gameState = IDLE;
+            Serial.println("> Moving to IDLE state");
+
+            delay(1000);
+
+            armedVibrateMillis = millis();
+            vibrateAll(true);
+            gameState = READY;
+            Serial.println("> Buzzers ARMED! Moving to READY state");
+
         }
     } else if (gameState == READY) {
         if (millis() - armedVibrateMillis > 100) {
