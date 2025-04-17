@@ -363,8 +363,8 @@ void loop()
                                 vibrateState = true;
                                 vibrating = true;
 
-                                showAll(0);
-                                showOn(i, remoteColours[i]);
+                                showAll(remoteColours[i]);
+                                // showOn(i, remoteColours[i]);
                                 vibrateRemote(i, true);
                                 indicateJack(i, true);
                             }
@@ -397,11 +397,14 @@ void loop()
 
     
     if (gameState == BUZZED) {
+        // Flashing when someone is answering
         if (millis() - flashMillis > 500) {
             flashMillis += 500;
             flashState = !flashState;
             showOn(selectedPlayer, flashState ? remoteColours[selectedPlayer] : (CRGB)0);
+            indicateJack(selectedPlayer, flashState);
         }
+        // Vibrate when someone buzzes in
         if (vibrating && (millis() - vibrateMillis > 100)) {
             vibrateMillis += 100;               // Adjust time since last
             vibrateCount++;                     // Increase amount of vibrations
@@ -435,6 +438,7 @@ void loop()
     } else if (gameState == READY) {
         if (millis() - armedVibrateMillis > 100) {
             vibrateAll(false);
+            indicateAll(false);
         }
     }
 }
@@ -496,6 +500,12 @@ void vibrateAll(bool state)
 void indicateJack(int index, bool state)
 {
     OUTPUTS.digitalWrite(remoteIndicatorMap[index], state);
+}
+
+void indicateAll(bool state) {
+    for (int i = 0; i < 8; i++) {
+        OUTPUTS.digitalWrite(remoteIndicatorMap[i], state);
+    }
 }
 
 // Detect remote connected
