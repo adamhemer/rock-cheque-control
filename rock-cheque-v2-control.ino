@@ -184,6 +184,8 @@ void setup()
             ; // Don't proceed, loop forever
     }
     display.clearDisplay();
+    display.setRotation(2);
+    
     display.setTextSize(2);              // Normal 1:1 pixel scale
     display.setTextColor(SSD1306_WHITE); // Draw white text
     display.setCursor(0, 0);             // Start at top-left corner
